@@ -1,6 +1,6 @@
 # WeaveApp - Family Calendar (React Native)
 
-A React Native mobile application for family calendar management, converted from a web-based application.
+A React Native mobile application for family calendar management, built with **Expo Router** for file-based routing.
 
 ## Features
 
@@ -15,11 +15,40 @@ A React Native mobile application for family calendar management, converted from
 ## Tech Stack
 
 - **React Native** with **Expo**
+- **Expo Router** for file-based routing (v6)
 - **TypeScript** for type safety
-- **React Navigation** for bottom tab navigation
 - **React Native Maps** for map functionality
 - **React Native SVG** for icon rendering
 - **@google/generative-ai** for AI features
+
+## Project Structure
+
+```
+webapp/
+├── app/                    # Expo Router screens
+│   ├── (tabs)/            # Tab layout group
+│   │   ├── _layout.tsx    # Bottom tabs navigator
+│   │   ├── index.tsx      # Feed screen (default tab)
+│   │   ├── calendar.tsx   # Calendar screen
+│   │   ├── create.tsx     # Create event screen
+│   │   ├── map.tsx        # Map screen
+│   │   └── settings.tsx   # Settings screen
+│   ├── _layout.tsx        # Root layout
+│   └── index.tsx          # App entry point
+├── components/            # Reusable React Native components
+│   ├── FeedView.tsx
+│   ├── CalendarView/
+│   ├── CreateEventView.tsx
+│   ├── MapView/
+│   ├── SettingsView.tsx
+│   └── icons/            # SVG icon components
+├── types.ts              # TypeScript type definitions
+├── constants.ts          # App constants and mock data
+├── hooks/                # Custom React hooks
+├── services/             # API services
+├── utils/                # Utility functions
+└── web-backup/           # Original web app backup
+```
 
 ## Prerequisites
 
@@ -57,50 +86,60 @@ npm start
 2. Scan the QR code shown in the terminal
 3. The app will load on your device
 
-## Project Structure
+## Expo Router File-Based Routing
 
+This project uses **Expo Router** which provides file-based routing similar to Next.js:
+
+### Route Structure:
+- `app/(tabs)/_layout.tsx` - Defines bottom tab navigation
+- `app/(tabs)/index.tsx` - Feed screen (/ route)
+- `app/(tabs)/calendar.tsx` - Calendar screen (/calendar)
+- `app/(tabs)/create.tsx` - Create event screen (/create)
+- `app/(tabs)/map.tsx` - Map screen (/map)
+- `app/(tabs)/settings.tsx` - Settings screen (/settings)
+
+### Navigation:
+```typescript
+import { useRouter } from 'expo-router';
+
+const router = useRouter();
+router.push('/calendar');  // Navigate to calendar
+router.back();              // Go back
 ```
-webapp/
-├── App.tsx                 # Main app component with navigation
-├── app.json               # Expo configuration
-├── types.ts               # TypeScript type definitions
-├── constants.ts           # App constants and mock data
-├── components/
-│   ├── FeedView.tsx       # Upcoming events feed
-│   ├── CalendarView/      # Calendar grid view
-│   ├── CreateEventView.tsx # Event creation/editing
-│   ├── MapView/           # Map with event locations
-│   ├── SettingsView.tsx   # User settings
-│   └── icons/             # SVG icon components
-├── hooks/                 # Custom React hooks
-├── services/              # API services
-├── utils/                 # Utility functions
-└── web-backup/            # Original web app backup
-```
 
-## Key Changes from Web Version
+### Layout Groups:
+- `(tabs)` - Layout group for bottom tab navigation
+- Files in layout groups share the same navigation structure
 
-### Component Updates
-- ✅ Replaced `<div>`, `<button>`, `<input>` with React Native components
-- ✅ Converted Tailwind CSS to React Native StyleSheet
-- ✅ Implemented React Navigation for bottom tabs
-- ✅ Converted all SVG icons to use `react-native-svg`
-- ✅ Added SafeAreaView for proper mobile layout
+## Key Features
 
-### Navigation
-- Bottom tab navigation with 5 screens:
-  - Feed
-  - Calendar
-  - Create
-  - Map
-  - Settings
+### Bottom Tab Navigation
+- 5 tabs: Feed, Calendar, Create, Map, Settings
+- Custom SVG icons for each tab
+- Active/inactive states with color changes
+
+### Screens
+- **Feed**: Shows upcoming events sorted by date
+- **Calendar**: Calendar grid view (placeholder for full implementation)
+- **Create**: Form to create/edit events
+- **Map**: React Native Maps showing event locations and user positions
+- **Settings**: User profile and app information
 
 ### Styling
-- All styles converted from CSS classes to StyleSheet objects
-- Color system using hex values instead of Tailwind classes
-- Responsive layouts using Flexbox
+- All styles use React Native StyleSheet
+- Color system using hex values
+- Responsive layouts with Flexbox
+- SafeAreaView for proper mobile layout
 
 ## Development Notes
+
+### Expo Router Benefits
+- ✅ File-based routing (like Next.js)
+- ✅ Type-safe navigation
+- ✅ Deep linking support out of the box
+- ✅ Easy to add new screens (just add files)
+- ✅ Automatic route generation
+- ✅ Layout groups for shared navigation
 
 ### Maps Configuration
 To use maps functionality:
@@ -133,6 +172,25 @@ npx expo install --fix
 npm start -- --clear
 ```
 
+### Expo Router Issues
+If routes aren't working:
+```bash
+rm -rf .expo
+npm start -- --clear
+```
+
+## Migration History
+
+### v1.0.0 - Initial React Native Conversion
+- Converted web app to React Native
+- Implemented React Navigation with Bottom Tabs
+
+### v2.0.0 - Expo Router Migration
+- Migrated to Expo Router for file-based routing
+- Created `app/` directory structure
+- Implemented layout groups with `(tabs)`
+- Removed manual React Navigation setup
+
 ## Original Web Version
 
 The original web application is backed up in the `web-backup/` directory for reference.
@@ -147,6 +205,8 @@ The original web application is backed up in the `web-backup/` directory for ref
 - [ ] Add push notifications for event reminders
 - [ ] Sync with device calendar
 - [ ] Add recurring events support
+- [ ] Add stack navigation for detail screens
+- [ ] Implement search functionality
 
 ## License
 
@@ -154,4 +214,4 @@ Private
 
 ## Version
 
-1.0.0 - React Native Conversion
+2.0.0 - Expo Router with File-Based Routing
