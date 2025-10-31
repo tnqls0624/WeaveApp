@@ -1,9 +1,27 @@
 import React from 'react';
+import Svg, { Path } from 'react-native-svg';
 
-const PlusIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-  </svg>
+interface IconProps {
+  width?: number;
+  height?: number;
+  color?: string;
+}
+
+const PlusIcon: React.FC<IconProps> = ({ width = 24, height = 24, color = '#3B82F6' }) => (
+  <Svg
+    width={width}
+    height={height}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+  >
+    <Path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 4v16m8-8H4"
+    />
+  </Svg>
 );
 
 export default PlusIcon;

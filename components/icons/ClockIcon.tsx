@@ -1,10 +1,27 @@
-
 import React from 'react';
+import Svg, { Path } from 'react-native-svg';
 
-const ClockIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
+interface IconProps {
+  width?: number;
+  height?: number;
+  color?: string;
+}
+
+const ClockIcon: React.FC<IconProps> = ({ width = 24, height = 24, color = '#6B7280' }) => (
+  <Svg
+    width={width}
+    height={height}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+  >
+    <Path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </Svg>
 );
 
 export default ClockIcon;

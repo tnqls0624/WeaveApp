@@ -1,120 +1,182 @@
-import React, { useState } from 'react';
-import { User } from '../types';
-import UserIcon from './icons/UserIcon';
-import BellIcon from './icons/BellIcon';
-import ShieldIcon from './icons/ShieldIcon';
-import LogoutIcon from './icons/LogoutIcon';
-import ChevronRightIcon from './icons/ChevronRightIcon';
-import ArrowLeftIcon from './icons/ArrowLeftIcon';
-import TagIcon from './icons/TagIcon';
-import UserFilter from './CalendarView/UserFilter';
-
-type SettingsPage = 'main' | 'account' | 'tags' | 'notifications' | 'privacy';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { User } from '../types';
 
 interface SettingsViewProps {
   users: User[];
-  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
+  setUsers: (users: User[]) => void;
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({ users, setUsers }) => {
-  const [page, setPage] = useState<SettingsPage>('main');
-  
-  const [filteredUserIds, setFilteredUserIds] = useState<string[]>(users.map(u => u.id));
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-
-  const availableColors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
-
-  const handleColorChange = (userId: string, color: string) => {
-    setUsers(currentUsers => currentUsers.map(u => u.id === userId ? { ...u, color } : u));
-  };
-
-  const renderMainPage = () => (
-    <>
-      <div className="bg-white rounded-lg shadow mb-6">
-        <SettingsItem icon={UserIcon} label="Account" onClick={() => setPage('account')} />
-        <SettingsItem icon={TagIcon} label="Tag Settings" onClick={() => setPage('tags')} />
-        <SettingsItem icon={BellIcon} label="Notifications" onClick={() => setPage('notifications')} />
-        <SettingsItem icon={ShieldIcon} label="Privacy & Security" onClick={() => setPage('privacy')} isLast={true} />
-      </div>
-
-      <div className="bg-white rounded-lg shadow">
-        <button className="w-full flex items-center p-4 text-left text-red-600 transition-colors hover:bg-red-50 rounded-lg">
-          <LogoutIcon className="w-6 h-6 mr-4" />
-          <span className="flex-grow font-semibold">Log Out</span>
-        </button>
-      </div>
-    </>
-  );
-
-  const renderSubPage = (title: string, children: React.ReactNode) => (
-    <div>
-      <button onClick={() => setPage('main')} className="flex items-center text-gray-600 font-semibold mb-4 hover:text-blue-600">
-        <ArrowLeftIcon className="w-5 h-5 mr-2" />
-        Back
-      </button>
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">{title}</h2>
-        {children}
-      </div>
-    </div>
-  );
-
-  const renderPage = () => {
-    switch(page) {
-      case 'main': return renderMainPage();
-      case 'account': return renderSubPage('Account', <p className="text-gray-500">Account settings will be available here.</p>);
-      case 'tags': return renderSubPage('Tag & Color Settings', (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">User Colors</h3>
-            <div className="space-y-4">
-              {users.map(user => (
-                <div key={user.id} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <img src={user.avatarUrl} alt={user.name} className="w-10 h-10 rounded-full mr-3" />
-                    <span className="font-medium text-gray-800">{user.name}</span>
-                  </div>
-                  <div className="flex items-center flex-wrap gap-2">
-                    {availableColors.slice(0, 8).map(color => ( // Limit colors for better layout
-                      <button key={color} onClick={() => handleColorChange(user.id, color)} className={`w-6 h-6 rounded-full border-2 ${user.color === color ? `border-${color}-500` : 'border-transparent'} bg-${color}-400`}></button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ));
-      case 'notifications': return renderSubPage('Notifications', (
-        <div className="flex items-center justify-between">
-            <span className="font-medium text-gray-800">New Event Notifications</span>
-            <button onClick={() => setNotificationsEnabled(!notificationsEnabled)} className={`w-12 h-7 rounded-full p-1 transition-colors ${notificationsEnabled ? 'bg-blue-500' : 'bg-gray-300'}`}>
-                <span className={`block w-5 h-5 bg-white rounded-full shadow transform transition-transform ${notificationsEnabled ? 'translate-x-5' : 'translate-x-0'}`}></span>
-            </button>
-        </div>
-      ));
-      case 'privacy': return renderSubPage('Privacy & Security', <p className="text-gray-500">Privacy settings will be available here.</p>);
-      default: return renderMainPage();
-    }
-  }
+  const currentUser = users.find(u => u.id === 'user1');
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Settings</h1>
-      {renderPage()}
-    </div>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Settings</Text>
+      </View>
+      <ScrollView style={styles.content}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Profile</Text>
+          {currentUser && (
+            <View style={styles.profileCard}>
+              <Image source={{ uri: currentUser.avatarUrl }} style={styles.avatar} />
+              <View style={styles.profileInfo}>
+                <Text style={styles.profileName}>{currentUser.name}</Text>
+                <Text style={styles.profileId}>User ID: {currentUser.id}</Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Family Members</Text>
+          {users.filter(u => u.id !== 'user1').map(user => (
+            <View key={user.id} style={styles.memberCard}>
+              <Image source={{ uri: user.avatarUrl }} style={styles.memberAvatar} />
+              <View style={styles.memberInfo}>
+                <Text style={styles.memberName}>{user.name}</Text>
+                <View style={[styles.colorBadge, { backgroundColor: getColorHex(user.color) }]}>
+                  <Text style={styles.colorBadgeText}>{user.color}</Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>App Info</Text>
+          <View style={styles.infoCard}>
+            <Text style={styles.infoText}>WeaveApp - Family Calendar</Text>
+            <Text style={styles.infoSubtext}>Version 1.0.0</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
-const SettingsItem: React.FC<{icon: React.FC<any>, label: string, onClick: () => void, isLast?: boolean}> = ({ icon: Icon, label, onClick, isLast }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center p-4 text-left transition-colors hover:bg-gray-50 ${!isLast && 'border-b border-gray-100'}`}
-  >
-    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 bg-gray-100 text-gray-600`}>
-        <Icon className="w-6 h-6" />
-    </div>
-    <span className="flex-grow text-gray-700 font-semibold">{label}</span>
-    <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-  </button>
-);
+const getColorHex = (colorName: string): string => {
+  const colors: { [key: string]: string } = {
+    blue: '#3B82F6',
+    emerald: '#10B981',
+    orange: '#F97316',
+    violet: '#8B5CF6',
+    gray: '#6B7280',
+  };
+  return colors[colorName] || colors.gray;
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  header: {
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1F2937',
+  },
+  content: {
+    flex: 1,
+  },
+  section: {
+    marginTop: 24,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  profileCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  profileInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  profileId: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  memberCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  memberAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  memberInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  memberName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  colorBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  colorBadgeText: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+  infoCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 16,
+  },
+  infoText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  infoSubtext: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+});
 
 export default SettingsView;

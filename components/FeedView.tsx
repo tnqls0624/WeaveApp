@@ -1,7 +1,8 @@
 import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Event, User } from '../types';
 import ClockIcon from './icons/ClockIcon';
-import MapIcon from './icons/MapIcon';
 
 interface FeedViewProps {
   events: Event[];
@@ -13,38 +14,47 @@ const FeedView: React.FC<FeedViewProps> = ({ events, users, onEventSelect }) => 
   const upcomingEvents = events
     .filter(event => {
       if (event.startTime) {
-        // For timed events, compare the full date and time
         const eventDateTime = new Date(`${event.startDate}T${event.startTime}`);
         return eventDateTime >= new Date();
       } else {
-        // For all-day events, check if the event's end date is today or in the future
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set time to midnight for date-only comparison
+        today.setHours(0, 0, 0, 0);
         const eventEndDate = event.endDate ? new Date(event.endDate + 'T00:00:00') : new Date(event.startDate + 'T00:00:00');
         return eventEndDate >= today;
       }
     })
     .sort((a, b) => {
-        const dateA = a.startTime ? new Date(`${a.startDate}T${a.startTime}`) : new Date(a.startDate + 'T00:00:00');
-        const dateB = b.startTime ? new Date(`${b.startDate}T${b.startTime}`) : new Date(b.startDate + 'T00:00:00');
-        return dateA.getTime() - dateB.getTime();
+      const dateA = a.startTime ? new Date(`${a.startDate}T${a.startTime}`) : new Date(a.startDate + 'T00:00:00');
+      const dateB = b.startTime ? new Date(`${b.startDate}T${b.startTime}`) : new Date(b.startDate + 'T00:00:00');
+      return dateA.getTime() - dateB.getTime();
     });
 
   const getUser = (id: string) => users.find(u => u.id === id);
 
-  const getEventColorName = (event: Event) => {
+  const getEventColor = (event: Event) => {
     const currentUser = users.find(u => u.id === 'user1');
     if (event.participantIds.includes(currentUser!.id)) {
-      return currentUser!.color;
+      return getColorHex(currentUser!.color);
     }
     const firstParticipant = users.find(u => u.id === event.participantIds[0]);
-    return firstParticipant?.color || 'gray';
+    return getColorHex(firstParticipant?.color || 'gray');
+  };
+
+  const getColorHex = (colorName: string): string => {
+    const colors: { [key: string]: string } = {
+      blue: '#3B82F6',
+      emerald: '#10B981',
+      orange: '#F97316',
+      violet: '#8B5CF6',
+      gray: '#6B7280',
+    };
+    return colors[colorName] || colors.gray;
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString + 'T00:00:00');
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -58,47 +68,140 @@ const FeedView: React.FC<FeedViewProps> = ({ events, users, onEventSelect }) => 
   };
 
   return (
-    <div>
-       <h1 className="text-2xl font-bold text-gray-800 mb-4">Upcoming</h1>
-      <div className="space-y-4">
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Upcoming</Text>
         {upcomingEvents.length > 0 ? (
           upcomingEvents.map(event => {
             const participants = event.participantIds.map(getUser).filter(Boolean) as User[];
-            const eventColor = getEventColorName(event);
-            const borderColorClass = `border-${eventColor}-500`;
-            const textColorClass = `text-${eventColor}-600`;
+            const eventColor = getEventColor(event);
 
             return (
-              <button key={event.id} onClick={() => onEventSelect(event)} className={`w-full text-left bg-white p-4 rounded-lg shadow-md border-l-4 ${borderColorClass}`}>
-                <p className="font-semibold text-gray-800 text-lg">{event.title}</p>
-                 <p className={`font-semibold text-sm ${textColorClass} mb-2`}>{formatDate(event.startDate)}</p>
-                
-                <div className="text-gray-600 space-y-2 mt-3">
+              <TouchableOpacity
+                key={event.id}
+                onPress={() => onEventSelect(event)}
+                style={[styles.eventCard, { borderLeftColor: eventColor }]}
+              >
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                <Text style={[styles.eventDate, { color: eventColor }]}>{formatDate(event.startDate)}</Text>
+
+                <View style={styles.eventDetails}>
                   {event.startTime && (
-                    <div className="flex items-center text-sm">
-                      <ClockIcon className="w-4 h-4 mr-2" />
-                      <span>{event.startTime} {event.endTime && `- ${event.endTime}`}</span>
-                    </div>
+                    <View style={styles.timeContainer}>
+                      <ClockIcon width={16} height={16} color="#6B7280" />
+                      <Text style={styles.timeText}>
+                        {event.startTime} {event.endTime && `- ${event.endTime}`}
+                      </Text>
+                    </View>
                   )}
-                  {event.description && <p className="text-sm">{event.description}</p>}
-                   <div className="flex items-center pt-2">
-                      {participants.map(p => (
-                          <img key={p.id} src={p.avatarUrl} alt={p.name} className="w-7 h-7 rounded-full -mr-2 border-2 border-white"/>
-                      ))}
-                  </div>
-                </div>
-              </button>
+                  {event.description && <Text style={styles.description}>{event.description}</Text>}
+                  <View style={styles.participantsContainer}>
+                    {participants.map((p, index) => (
+                      <Image
+                        key={p.id}
+                        source={{ uri: p.avatarUrl }}
+                        style={[styles.avatar, { marginLeft: index > 0 ? -8 : 0 }]}
+                      />
+                    ))}
+                  </View>
+                </View>
+              </TouchableOpacity>
             );
           })
         ) : (
-          <div className="text-center py-16">
-            <p className="text-gray-500">No upcoming events.</p>
-            <p className="text-gray-400 text-sm">Create one from the '+' button below!</p>
-          </div>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No upcoming events.</Text>
+            <Text style={styles.emptySubtext}>Create one from the '+' button below!</Text>
+          </View>
         )}
-      </div>
-    </div>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 16,
+  },
+  eventCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  eventDate: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  eventDetails: {
+    marginTop: 8,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  timeText: {
+    fontSize: 14,
+    color: '#4B5563',
+    marginLeft: 8,
+  },
+  description: {
+    fontSize: 14,
+    color: '#4B5563',
+    marginBottom: 8,
+  },
+  participantsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  avatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 64,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+});
 
 export default FeedView;
