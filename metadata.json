@@ -1,0 +1,7 @@
+{
+  "name": "Family Map Calendar",
+  "description": "A shared calendar for families and friends with real-time location tracking on a map, inspired by TimeTree. Easily organize schedules and see where everyone is at a glance.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
